@@ -1,79 +1,72 @@
 # Planning with Files (No-Skill Version)
 
-这是一个基于文件系统的持久化规划工作流工具，旨在帮助 AI 代理（或人类开发者）在处理复杂任务时保持上下文、跟踪进度并记录发现。
+**为不支持 Skill 插件系统的 Code Agent 量身定制的持久化规划工作流。**
 
-本项目的灵感和核心模式参考了 [OthmanAdi/planning-with-files](https://github.com/OthmanAdi/planning-with-files)，特别感谢其提出的 "Manus AI" 风格的持久化 Markdown 规划工作流。
+本项目提供了一套轻量级的指令协议和文件模板，旨在通过简单的 **Prompt 注入**，让任何具有文件读写能力的 AI 代理（如 Gemini CLI、Claude、Open-webui 等）都能拥有类似 [Manus AI](https://manus.ai/) 的“持久化规划”能力。
 
-## 核心理念
+## 🚀 为什么需要本项目？
 
-通过使用文件系统作为“工作记忆”，本项目通过三个核心 Markdown 文件解决以下问题：
-- **内存易失**：AI 代理的上下文窗口有限，重要信息容易丢失。
-- **目标漂移**：在长任务中容易偏离最初的目标。
-- **错误隐藏**：失败的尝试往往被滚动出上下文。
-- **上下文堆积**：无关紧要的细节占据了宝贵的 Token 空间。
+大多数传统的 Code Agent 在面对复杂、多步骤的任务时经常会遇到以下痛点：
+- **上下文漂移**：随着对话变长，AI 容易忘记最初的目标或关键约束。
+- **内存易失**：AI 的上下文窗口是有限且易逝的，深层逻辑容易被冗长的输出冲刷掉。
+- **错误循环**：遇到错误时，AI 往往在同一个坑里反复尝试，没有持久的错误日志指导。
 
-## 三文件模式
-
-1.  **`task_plan.md`**: 任务蓝图。记录总体目标、拆分的阶段（Phases）以及当前的详细步骤。
-2.  **`findings.md`**: 知识库。记录研究成果、关键决策、API 细节和重要的代码片段。
-3.  **`progress.md`**: 操作日志。按时间顺序记录已完成的工作、测试结果和遇到的困难。
-
-## 简易版使用指南 (推荐)
-
-如果你只想让 AI Agent 遵循该规划工作流，而不需要安装额外的脚本，可以使用 `SYSTEM_PROMPT_simple.md`。
-
-### 使用方法：
-直接将 `SYSTEM_PROMPT_simple.md` 的文件内容复制到你的 AI Agent 系统提示词（System Prompt）或项目上下文提示词中。
-
-### 示例：Gemini CLI
-对于使用 **Gemini CLI** 的开发者，可以实现“开箱即用”：
-1. 在你的开发项目根目录下创建一个名为 `GEMINI.md` 的文件。
-2. 将本项目中的 `SYSTEM_PROMPT_simple.md` 内容全部复制进去。
-3. 当你启动 Gemini CLI 并与之对话时，它会自动读取 `GEMINI.md` 并激活该规划模式。
+**本项目通过将“工作记忆”从内存转移到文件系统（Disk），大幅提升 AI 处理复杂逻辑的成功率。**
 
 ---
 
-## 完整版安装指南
+## 💡 核心理念：Manus 风格工作流
 
-如果你需要更强大的功能（如自动化初始化、完成度检查脚本等），请按照以下步骤安装。
+本项目的核心模式参考了 [OthmanAdi/planning-with-files](https://github.com/OthmanAdi/planning-with-files)。它强迫 AI 在执行代码前先“思考并记录”：
+
+1.  **`task_plan.md` (总计划)**：AI 必须先拆分阶段，并在每个阶段完成后更新进度。
+2.  **`findings.md` (知识库)**：调研出的 API 细节、决策依据存入此文件，永不丢失。
+3.  **`progress.md` (操作日志)**：记录每一步的操作和遇到的 Error，确保错误能被总结和规避。
+
+---
+
+## 🛠️ 简易版使用指南 (推荐：零配置启动)
+
+如果你正在使用不支持 Skill 扩展的 Agent（例如 **Gemini CLI**），这是最快的使用方式。
+
+### 1. 复制 Prompt
+直接打开本项目中的 [`SYSTEM_PROMPT_simple.md`](SYSTEM_PROMPT_simple.md)，将其内容复制。
+
+### 2. 注入上下文
+- **通用方法**：将内容直接粘贴到 AI 的 System Prompt 或对话开始的首条指令中。
+- **Gemini CLI 用户 (最佳实践)**：
+    1. 在你的开发项目根目录下创建 `GEMINI.md` 文件。
+    2. 将 `SYSTEM_PROMPT_simple.md` 的内容粘贴进去。
+    3. 启动 Gemini CLI，它将自动读取该协议并进入“规划模式”。
+
+---
+
+## 📦 完整版安装指南 (带自动化工具)
+
+如果你希望在本地项目中保留这套工具包，并使用自动初始化和检查脚本：
 
 ### 项目结构
-
 ```text
 .
-├── scripts/           # 实用脚本
-│   ├── init.sh        # 初始化三个核心文件
-│   └── check.sh       # 检查计划完成情况
-├── templates/         # 核心文件的 Markdown 模板
-│   ├── findings.md
-│   ├── progress.md
-│   └── task_plan.md
-├── install.sh         # 安装脚本（配置环境）
-└── SYSTEM_PROMPT.md   # 建议配合使用的系统提示词
+├── scripts/           # 包含完成度检查逻辑 (check.sh)
+├── templates/         # 核心 Markdown 模板
+├── install.sh         # 一键安装脚本
+└── SYSTEM_PROMPT.md   # 完整版协议
 ```
 
-### 1. 安装与初始化
-
-在本项目（工具包）目录下运行安装脚本，并指定你的**开发项目路径**：
-
+### 安装步骤
+在本项目目录下运行：
 ```bash
-# 格式：bash install.sh <目标项目路径>
-bash install.sh ../path/to/your/project
+# bash install.sh <目标项目路径>
+bash install.sh ../my-project
 ```
+脚本会自动在目标项目中创建 `.planning/` 目录并初始化所有必要的规划文件。
 
-该脚本将执行以下操作：
-1.  在目标项目目录创建 `.planning/` 文件夹并安装脚本、模板和系统提示词。
-2.  在目标项目目录初始化核心文件：`task_plan.md`、`findings.md` 和 `progress.md`。
-
-### 2. 开始规划
-
-1.  将 `.planning/SYSTEM_PROMPT.md` 的内容告知你的 AI Agent，让它理解此工作流。
-2.  按照模板填充 `task_plan.md`，并随着任务的进行不断更新这三个文件。
-3.  任务结束时，运行 `./.planning/scripts/check.sh` 验证所有阶段是否已完成。
+---
 
 ## 鸣谢
 
-本项目是对 [OthmanAdi/planning-with-files](https://github.com/OthmanAdi/planning-with-files) 的精简/通用版本实现，适用于任何能够读写文件的 AI 代理或开发环境。
+本项目是对 [OthmanAdi/planning-with-files](https://github.com/OthmanAdi/planning-with-files) 的精简与通用化实现。
 
 ## 许可证
 
