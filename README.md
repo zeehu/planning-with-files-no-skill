@@ -6,61 +6,56 @@
 
 ## 🚀 为什么需要本项目？
 
-大多数传统的 Code Agent 在面对复杂、多步骤的任务时经常会遇到以下痛点：
-- **上下文漂移**：随着对话变长，AI 容易忘记最初的目标或关键约束。
-- **内存易失**：AI 的上下文窗口是有限且易逝的，深层逻辑容易被冗长的输出冲刷掉。
-- **错误循环**：遇到错误时，AI 往往在同一个坑里反复尝试，没有持久的错误日志指导。
-
-**本项目通过将“工作记忆”从内存转移到文件系统（Disk），大幅提升 AI 处理复杂逻辑的成功率。**
+本项目通过将“工作记忆”从内存转移到文件系统（Disk），大幅提升 AI 处理复杂逻辑的成功率。
+- **上下文持久化**：所有的阶段、发现和错误都记录在 `.planning/` 目录下。
+- **错误循环规避**：通过强制记录 Error Log，防止 AI 在同一个问题上反复尝试。
 
 ---
 
 ## 💡 核心理念：Manus 风格工作流
 
-本项目的核心模式参考了 [OthmanAdi/planning-with-files](https://github.com/OthmanAdi/planning-with-files)。它强迫 AI 在执行代码前先“思考并记录”：
-
-1.  **`task_plan.md` (总计划)**：AI 必须先拆分阶段，并在每个阶段完成后更新进度。
-2.  **`findings.md` (知识库)**：调研出的 API 细节、决策依据存入此文件，永不丢失。
-3.  **`progress.md` (操作日志)**：记录每一步的操作和遇到的 Error，确保错误能被总结和规避。
+1.  **`task_plan.md` (总计划)**：拆分阶段，实时更新。
+2.  **`findings.md` (知识库)**：存入调研细节，永不丢失。
+3.  **`progress.md` (操作日志)**：记录每一步的操作和遇到的错误。
 
 ---
 
-## 🛠️ 简易版使用指南 (推荐：零配置启动)
+## 🛠️ 安装与使用指南
 
-如果你正在使用不支持 Skill 扩展的 Agent（例如 **Gemini CLI**），这是最快的使用方式。
+本项目提供两种使用方式，请根据需求选择。
 
-### 1. 复制 Prompt
-直接打开本项目中的 [`SYSTEM_PROMPT_simple.md`](SYSTEM_PROMPT_simple.md)，将其内容复制。
+### 方式一：完整版 (推荐)
+**适合长期项目**，安装包含完整协议文档、模板和辅助脚本的 `planning-with-files` 目录。
 
-### 2. 注入上下文
-- **通用方法**：将内容直接粘贴到 AI 的 System Prompt 或对话开始的首条指令中。
-- **Gemini CLI 用户 (最佳实践)**：
-    1. 在你的开发项目根目录下创建 `GEMINI.md` 文件。
-    2. 将 `SYSTEM_PROMPT_simple.md` 的内容粘贴进去。
-    3. 启动 Gemini CLI，它将自动读取该协议并进入“规划模式”。
-
----
-
-## 📦 完整版安装指南 (带自动化工具)
-
-如果你希望在本地项目中保留这套工具包，并使用自动初始化和检查脚本：
-
-### 项目结构
-```text
-.
-├── scripts/           # 包含完成度检查逻辑 (check.sh)
-├── templates/         # 核心 Markdown 模板
-├── install.sh         # 一键安装脚本
-└── SYSTEM_PROMPT.md   # 完整版协议
-```
-
-### 安装步骤
+#### 1. 运行安装脚本
 在本项目目录下运行：
 ```bash
-# bash install.sh <目标项目路径>
-bash install.sh ../my-project
+# 用法: bash install.sh <目标项目路径>
+bash install.sh ../my-awesome-project
 ```
-脚本会自动在目标项目中创建 `.planning/` 目录并初始化所有必要的规划文件。
+脚本会将 `planning-with-files` 文件夹完整复制到你的目标项目根目录下。
+
+#### 2. 配置 System Prompt
+*   **通用 Agent**：打开目标项目中的 `planning-with-files/SKILL.md`，将其内容复制并粘贴到你的 Agent System Prompt 中。
+*   **Gemini CLI**：直接将 `planning-with-files/SKILL.md` 的内容复制到项目根目录下的 `GEMINI.md` 文件中。
+
+#### 3. 开始任务
+Agent 启动后，会根据协议要求在项目根目录下（注意：不是在 `planning-with-files` 目录内）依据模板初始化 `task_plan.md` 等文件。
+
+---
+
+### 方式二：简易版 (Lite)
+**适合快速体验或临时任务**，无需安装任何文件，仅需一段 Prompt。
+
+#### 1. 获取 Prompt
+复制本项目根目录下的 [SYSTEM_PROMPT_simple.md](SYSTEM_PROMPT_simple.md) 文件内容。
+
+#### 2. 配置 System Prompt
+将其粘贴到你的 AI Agent 的 System Prompt 中。
+
+#### 3. 开始任务
+直接向 Agent 下达复杂任务指令。Agent 会根据 Prompt 中的指令，自动在当前目录下创建 `.planning/` 目录并初始化所需的三大规划文件。
+如果需要强制触发 planning-with-files，可在任务 prompt 前加入`使用 planning_with_files：`.
 
 ---
 
