@@ -2,7 +2,7 @@
 
 **为不支持 Skill 插件系统的 Code Agent 量身定制的持久化规划工作流。**
 
-本项目提供了一套轻量级的指令协议和文件模板，旨在通过简单的 **Prompt 注入**，让任何具有文件读写能力的 AI 代理（如 Gemini CLI、Claude、Open-webui 等）都能拥有类似 [Manus AI](https://manus.ai/) 的“持久化规划”能力。
+本项目提供了一套轻量级的指令协议和文件模板，旨在通过简单的 **Prompt 注入**，让任何具有文件读写能力的 AI 代理（如 Gemini CLI、Open-webui 等）都能拥有类似 [Manus AI](https://manus.ai/) 的“持久化规划”能力。
 
 ## 🚀 为什么需要本项目？
 
